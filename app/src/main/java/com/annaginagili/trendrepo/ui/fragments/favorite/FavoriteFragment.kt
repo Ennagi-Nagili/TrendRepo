@@ -1,16 +1,15 @@
-package com.annaginagili.trendrepo.favoritedRagment
+package com.annaginagili.trendrepo.ui.fragments.favorite
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
-import com.annaginagili.FavoriteFragmentDirections
 import com.annaginagili.trendrepo.adapter.FavAdapter
 import com.annaginagili.trendrepo.database.AppDatabase
 import com.annaginagili.trendrepo.databinding.FragmentFavoriteBinding
@@ -37,11 +36,7 @@ class FavoriteFragment : Fragment() {
         repos.setHasFixedSize(true)
         repos.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
 
-        CoroutineScope(Dispatchers.IO).launch {
-            db = Room.databaseBuilder(requireContext(), AppDatabase::class.java, "Favorite")
-                .build()
-            viewModel.getFaves(db.favDao())
-        }
+        viewModel.getFaves(requireContext())
 
         setUpObservers()
 

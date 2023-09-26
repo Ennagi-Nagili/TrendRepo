@@ -1,8 +1,7 @@
-package com.annaginagili.trendrepo
+package com.annaginagili.trendrepo.ui.fragments.home
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,18 +10,15 @@ import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import android.widget.ProgressBar
 import android.widget.Spinner
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import com.annaginagili.trendrepo.adapter.RepoAdapter
-import com.annaginagili.trendrepo.api.RetrofitClient
 import com.annaginagili.trendrepo.databinding.FragmentHomeBinding
 import com.annaginagili.trendrepo.model.ItemsModel
-import com.annaginagili.trendrepo.model.RepoModel
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.time.LocalDate
 
 class HomeFragment : Fragment() {
@@ -35,6 +31,7 @@ class HomeFragment : Fragment() {
     var page = 1
     lateinit var loading: ProgressBar
     var actualPosition = 0
+    lateinit var viewModel: HomeFragmentViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -43,6 +40,7 @@ class HomeFragment : Fragment() {
         spinner = binding.spinner
         reposList = ArrayList()
         loading = binding.loading
+        viewModel = ViewModelProvider(this)[HomeFragmentViewModel::class.java]
 
         spinner.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item,
             listOf("Last Day", "Last Week", "Last Month"))
@@ -62,6 +60,9 @@ class HomeFragment : Fragment() {
                 getRepos()
             }
         }
+
+        setUpLoading()
+        setUpRepoList()
 
         repos.setHasFixedSize(true)
         repos.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
@@ -88,35 +89,32 @@ class HomeFragment : Fragment() {
 
     fun getRepos() {
         loading.visibility = View.VISIBLE
+        viewModel.getRepos(date, page)
+    }
 
-        RetrofitClient.getInstance().getApi().getLastDay(date.toString(), "stars",
-            "desc", page.toString()).enqueue(object : Callback<RepoModel> {
-            override fun onResponse(call: Call<RepoModel>, response: Response<RepoModel>) {
-                if (response.body() != null) {
-                    loading.visibility = View.INVISIBLE
-                    reposList += response.body()!!.items as ArrayList<ItemsModel>
-                    adapter = RepoAdapter(requireContext(), reposList)
+    private fun setUpLoading() {
+        viewModel.observeLoading().observe(viewLifecycleOwner) {
+            if (!it) {
+                loading.visibility = View.INVISIBLE
+            }
+        }
+    }
 
-                    adapter.setOnItemClickListener(object : RepoAdapter.OnItemClickListener {
-                        override fun onItemClick(position: Int) {
-                            Log.e("hello", position.toString())
+    private fun setUpRepoList() {
+        viewModel.observeRepoList().observe(viewLifecycleOwner) {
+            adapter = RepoAdapter(requireContext(), it)
+            Log.e("hello", it.toString())
 
-                            findNavController().navigate(HomeFragmentDirections
-                                .actionHomeFragmentToDetailsFragment(reposList[position]))
-                        }
-                    })
-
-                    repos.adapter = adapter
-                    page++
-                    repos.scrollToPosition(actualPosition)
-                    actualPosition = reposList.size-1
-                    Log.e("hello", "size: " + reposList.size)
+            adapter.setOnItemClickListener(object : RepoAdapter.OnItemClickListener {
+                override fun onItemClick(position: Int) {
+                    findNavController().navigate(HomeFragmentDirections.actionHomeFragmentToDetailsFragment(it[position]))
                 }
-            }
+            })
 
-            override fun onFailure(call: Call<RepoModel>, t: Throwable) {
-                Log.e("hello", t.message.toString())
-            }
-        })
+            repos.adapter = adapter
+            page++
+            repos.scrollToPosition(actualPosition)
+            actualPosition = reposList.size-1
+        }
     }
 }

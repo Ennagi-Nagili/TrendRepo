@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.annaginagili.trendrepo.HomeFragment"
+        android:name="com.annaginagili.trendrepo.ui.fragments.home.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" >
         <action
@@ -19,7 +19,7 @@
     </fragment>
     <fragment
         android:id="@+id/detailsFragment"
-        android:name="com.annaginagili.trendrepo.DetailsFragment"
+        android:name="com.annaginagili.trendrepo.ui.fragments.details.DetailsFragment"
         android:label="fragment_details"
         tools:layout="@layout/fragment_details">
 
@@ -29,7 +29,7 @@
     </fragment>
     <fragment
         android:id="@+id/favoriteFragment"
-        android:name="com.annaginagili.trendrepo.favoritedRagment.FavoriteFragment"
+        android:name="com.annaginagili.trendrepo.ui.fragments.favorite.FavoriteFragment"
         android:label="fragment_favorite"
         tools:layout="@layout/fragment_favorite" >
         <action
